@@ -377,25 +377,71 @@ body {
         }
     }
 
-    div.x-axis-label, div.y-axis-label {
+    div.x-axis-label, div.y-axis-label, div.axis-label-edit {
         position: absolute;
         font-size: 13px !important;
         color: $gray4;
         font-weight: bold;
         z-index: 2;
         pointer-events: none;
+        height: 18px;
     }
 
-    div.y-axis-label {
+    div.y-axis-label, div.axis-label-edit.type-y {
         transform-origin: 50% 0;
         transform:translateX(-50%) rotate(270deg) ;
         left: 4px;
+        input {
+            cursor: vertical-text;
+            top: -1px;
+        }
     }
 
 
-    div.x-axis-label {
+    div.x-axis-label, div.axis-label-edit.type-x {
         transform: translateX(-50%);
         bottom: 4px;
+    }
+
+    div.axis-label-edit {
+        pointer-events: auto;
+        background: white;
+        min-width: 48px;
+        text-align: center;
+        
+        span {
+            white-space: nowrap;
+            padding: 0 4px;
+        }
+
+        input {
+            position: absolute;
+            top: -2px;
+            left: 0;
+            cursor: text;
+            width: 100%;
+            color: $gray4;
+            font-weight: bold;
+            outline: none;
+            text-align: center;
+            opacity: 0;
+            height: 20px;
+
+            &:focus {
+                opacity: 1;
+            }
+        }
+
+        &:hover {
+            z-index: 3;
+            input {
+                opacity: 1;
+            }
+        } 
+
+        & + .x-axis-label {
+            display: none;
+        }
     }
 
     .external-axis {
