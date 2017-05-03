@@ -36,17 +36,18 @@ export default function labelMixin (chart) {
   }
 
   function setLabel (type, val) {
-    const value = val ? val : chart[`${type}AxisLabel`]()
 
-    chart[`${type}AxisLabel`](value)
+    chart[`${type}AxisLabel`](val)
     if (chart._isRangeChart) {
-      chart.focusChart()[`_invokeLabel${type.toUpperCase()}Listener`](value)
+      chart.focusChart()[`_invokeLabel${type.toUpperCase()}Listener`](val)
       if (type === "x") {
+        chart.xAxisLabel(chart.focusChart().xAxisLabel())
         chart.redrawAsync()
       }
       return
     }
     chart[`_invokeLabel${type.toUpperCase()}Listener`](val)
+    chart.redrawAsync()
   }
 
   chart.prepareLabelEdit = function (type = "y") {
@@ -62,7 +63,7 @@ export default function labelMixin (chart) {
       top: type === "y" ? `${(chart.effectiveHeight() + yOffset) / 2 + chart.margins().top}px` : ""
     }
 
-    chart
+    const nodes = chart
       .root()
       .selectAll(`.axis-label-edit.type-${type}`)
       .remove()
@@ -86,6 +87,7 @@ export default function labelMixin (chart) {
     editorWrapper
       .append("input")
       .attr("value", chart[`${type}AxisLabel`]())
+      .attr("maxlength", "32")
       .on("focus", function () {
         this.select()
       })
@@ -93,7 +95,7 @@ export default function labelMixin (chart) {
         d3.select(this.parentNode).select("span").text(this.value)
       })
       .on("change", function () {
-        setLabel(type, this.value)
+        this.blur()
       })
       .on("blur", function () {
         setLabel(type, this.value)
