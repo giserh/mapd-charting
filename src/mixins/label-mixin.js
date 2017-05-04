@@ -1,6 +1,8 @@
 import d3 from "d3"
 
 const NON_INDEX = -1
+const LEGEND_WIDTH = 180
+const LABEL_WIDTH_MULTIPLIER = 0.9
 
 export default function labelMixin (chart) {
   const events = ["xLabel", "yLabel"]
@@ -35,6 +37,23 @@ export default function labelMixin (chart) {
     _listeners.xLabel(chart, val)
   }
 
+  function getMaxLabelWidth (type, hasLegend) {
+    if (type === "y") {
+      return (chart.height() - Math.max(chart.margins().top + chart.margins().bottom, 64)) * LABEL_WIDTH_MULTIPLIER
+    }
+
+    return (hasLegend ? (chart.width() - LEGEND_WIDTH) : chart.effectiveWidth()) * LABEL_WIDTH_MULTIPLIER
+  }
+
+  function getXaxisLeftPosition (hasLegend) {
+    return hasLegend ? chart.width() / 2 + 32 : chart.effectiveWidth() / 2 + chart.margins().left
+  }
+
+  function getYaxisTopPosition () {
+    const yOffset = chart.rangeChartEnabled() && chart._rangeChartCreated ? chart.rangeChart().height() - chart.rangeChart().margins().bottom + chart.margins().bottom : 0
+    return (chart.height() - Math.max(chart.margins().top + chart.margins().bottom, 64) + yOffset) / 2 + chart.margins().top
+  }
+
   function setLabel (type, val) {
 
     chart[`${type}AxisLabel`](val)
@@ -56,14 +75,14 @@ export default function labelMixin (chart) {
     ) {
       return
     }
-    const yOffset = chart.rangeChartEnabled() && chart._rangeChartCreated ? chart.rangeChart().height() - chart.rangeChart().margins().bottom + chart.margins().bottom : chart.margins().bottom
+    const hasLegend = (type === "x" && chart.legend() && chart.legend().legendType() === "quantitative")
 
     const iconPosition = {
-      left: type === "y" ? "" : `${chart.effectiveWidth() / 2 + chart.margins().left}px`,
-      top: type === "y" ? `${(chart.effectiveHeight() + yOffset) / 2 + chart.margins().top}px` : ""
+      left: type === "y" ? "" : `${getXaxisLeftPosition(hasLegend)}px`,
+      top: type === "y" ? `${getYaxisTopPosition()}px` : ""
     }
 
-    const nodes = chart
+    chart
       .root()
       .selectAll(`.axis-label-edit.type-${type}`)
       .remove()
@@ -77,8 +96,12 @@ export default function labelMixin (chart) {
       .root()
       .append("div")
       .attr("class", `axis-label-edit type-${type}`)
+      .classed("has-legend", hasLegend)
       .style("top", iconPosition.top)
       .style("left", iconPosition.left)
+      .append("div")
+      .attr("class", "input-wrapper")
+      .style("max-width", `${getMaxLabelWidth(type, hasLegend)}px`)
 
     editorWrapper
       .append("span")
@@ -87,12 +110,18 @@ export default function labelMixin (chart) {
     editorWrapper
       .append("input")
       .attr("value", chart[`${type}AxisLabel`]())
-      .attr("maxlength", "32")
+      .attr("title", chart[`${type}AxisLabel`]())
       .on("focus", function () {
         this.select()
       })
       .on("keyup", function () {
         d3.select(this.parentNode).select("span").text(this.value)
+        if (d3.event.keyCode === 13) {
+          this.blur()
+        }
+      })
+      .on("mouseup", () => {
+        d3.event.preventDefault()
       })
       .on("change", function () {
         this.blur()
