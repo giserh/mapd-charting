@@ -39,7 +39,8 @@ export default function labelMixin (chart) {
 
   function getMaxLabelWidth (type, hasLegend) {
     if (type === "y") {
-      return (chart.height() - Math.max(chart.margins().top + chart.margins().bottom, 64)) * LABEL_WIDTH_MULTIPLIER
+      const height = chart.height() + (chart.rangeChartEnabled() && chart._rangeChartCreated ? chart.rangeChart().height() : 0)
+      return (height - Math.max(chart.margins().top + chart.margins().bottom, 64)) * LABEL_WIDTH_MULTIPLIER
     }
 
     return (hasLegend ? (chart.width() - LEGEND_WIDTH) : chart.effectiveWidth()) * LABEL_WIDTH_MULTIPLIER
@@ -101,7 +102,7 @@ export default function labelMixin (chart) {
       .style("left", iconPosition.left)
       .append("div")
       .attr("class", "input-wrapper")
-      .style("max-width", `${getMaxLabelWidth(type, hasLegend)}px`)
+      .style("width", `${getMaxLabelWidth(type, hasLegend)}px`)
 
     editorWrapper
       .append("span")

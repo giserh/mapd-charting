@@ -405,11 +405,11 @@ body {
     }
 
     div.axis-label-edit {
-        pointer-events: auto;
+        pointer-events: none;
         text-align: center;
         display: flex;
         justify-content: center;
-        max-width: 100%;
+        width: 100%;
         .input-wrapper {
             position: relative;
         }
@@ -423,9 +423,11 @@ body {
             text-overflow: ellipsis;
             position: relative;
             min-width: 64px;
+            pointer-events: auto;
         }
 
         input {
+            pointer-events: auto;
             position: absolute;
             top: -2px;
             left: 0;
